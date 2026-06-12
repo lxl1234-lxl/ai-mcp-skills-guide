@@ -104,27 +104,36 @@ class Orchestrator:
         previous = None
 
         for task in tasks:
+            # 前一个任务失败且当前不支持跳过 → 终止流水线
+            if previous and previous.status == TaskStatus.FAILED:
+                if task.skip_on_failure:
+                    self.results[task.name] = TaskResult(
+                        task_name=task.name, status=TaskStatus.SKIPPED,
+                        error="前置任务失败，已跳过",
+                    )
+                    continue
+                else:
+                    break
+
             if previous and previous.status == TaskStatus.SUCCESS:
                 task.kwargs["_previous_result"] = previous.data
 
-            should_skip = any(
+            # 检查 depends_on 中的依赖是否失败
+            failed_dep = any(
                 dep in self.results and self.results[dep].status == TaskStatus.FAILED
                 for dep in task.depends_on
-            ) and task.skip_on_failure
-
-            if should_skip:
+            )
+            if failed_dep and task.skip_on_failure:
                 self.results[task.name] = TaskResult(
                     task_name=task.name, status=TaskStatus.SKIPPED,
-                    error="前置任务失败，已跳过",
+                    error="前置依赖失败，已跳过",
                 )
+                previous = self.results[task.name]
                 continue
 
             result = await self._execute_with_retry(task)
             self.results[task.name] = result
             previous = result
-
-            if result.status == TaskStatus.FAILED:
-                break
 
         return self.results
 
