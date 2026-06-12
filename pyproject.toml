@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "ai-mcp-skills"
+version = "1.0.0"
+description = "AI 系统中 MCP 架构的技能开发框架：技能定义、服务端实现与多模式编排引擎"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "lxl1234-lxl"},
+]
+keywords = ["mcp", "ai", "skills", "orchestration", "agent", "model-context-protocol"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.5",
+]
+mcp = [
+    "mcp>=1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/lxl1234-lxl/ai-mcp-skills-guide"
+Repository = "https://github.com/lxl1234-lxl/ai-mcp-skills-guide"
+Issues = "https://github.com/lxl1234-lxl/ai-mcp-skills-guide/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
