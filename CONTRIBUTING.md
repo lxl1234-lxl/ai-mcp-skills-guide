@@ -44,15 +44,26 @@ git checkout -b fix/your-bug-fix
 #### 3. 开发和测试
 
 ```bash
-# 安装开发依赖
-pip install -e ".[dev]"
+# 安装开发依赖与 pre-commit 钩子
+make dev          # 等价于 pip install -e ".[dev]" && pre-commit install
 
 # 运行测试
-pytest
+make test         # 等价于 pytest -q
 
 # 运行代码检查
-ruff check .
+make lint         # 等价于 ruff check .
+
+# 类型检查
+make typecheck    # 等价于 mypy src
 ```
+
+提交前 `pre-commit` 会自动运行 ruff 与格式化。如需手动运行：
+
+```bash
+pre-commit run --all-files
+```
+
+CI（GitHub Actions）会在 PR 上自动运行相同的检查（Python 3.10/3.11/3.12 矩阵）。
 
 #### 4. 提交代码
 

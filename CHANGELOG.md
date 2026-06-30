@@ -1,5 +1,26 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- `HttpRequestSkill` 基于 urllib 标准库的 HTTP 请求技能（GET/POST/PUT/DELETE）
+- GitHub Actions CI 流水线（lint + typecheck + test，Python 3.10/3.11/3.12 矩阵）
+- Issue 模板（Bug 报告 / 功能建议）与 PR 模板
+- `CODE_OF_CONDUCT.md` 贡献者公约
+- `SECURITY.md` 安全策略
+- 文档：`quickstart.md`、`api-reference.md`、`troubleshooting.md`、`faq.md`、`roadmap.md`
+- `examples/README.md` 示例索引
+- `examples/http-skill/run_demo.py` HTTP 技能演示
+- 开发工具：`Makefile`、`mypy.ini`、`.pre-commit-config.yaml`、`.editorconfig`
+
+### Changed
+- 测试文件拆分为 `test_skill.py` / `test_mcp.py` / `test_orchestration.py` / `test_http_skill.py`
+- `README.md` 添加徽章、目录、内置技能与开发章节
+- `CONTRIBUTING.md` 补充 pre-commit 与 CI 说明
+
+### Removed
+- `tests/test_package.py`（内容已拆分到分模块测试文件）
+
 ## [1.0.0] - 2026-06-12
 
 ### Added
