@@ -14,6 +14,7 @@
 - `examples/README.md` 示例索引
 - `examples/http-skill/run_demo.py` HTTP 技能演示
 - 开发工具：`Makefile`、`mypy.ini`、`.pre-commit-config.yaml`、`.editorconfig`
+- PyPI 自动发布 workflow（基于 Trusted Publishers，tag 推送触发）
 
 ### Changed
 - 测试文件拆分为 `test_skill.py` / `test_mcp.py` / `test_orchestration.py` / `test_http_skill.py`
