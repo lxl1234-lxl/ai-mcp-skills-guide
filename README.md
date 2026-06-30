@@ -1,6 +1,49 @@
 # AI MCP Skills Guide
 
-AI 系统中的 **MCP（Management Control Plane）** 架构设计、技能（Skill）开发指南与代码实现示例。
+[![CI](https://github.com/lxl1234-lxl/ai-mcp-skills-guide/actions/workflows/ci.yml/badge.svg)](https://github.com/lxl1234-lxl/ai-mcp-skills-guide/actions/workflows/ci.yml)
+[![PyPI version](https://img.shields.io/pypi/v/ai-mcp-skills.svg)](https://pypi.org/project/ai-mcp-skills/)
+[![Python](https://img.shields.io/pypi/pyversions/ai-mcp-skills.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://github.com/astral-sh/ruff)
+
+> AI 系统中的 **MCP（Management Control Plane）** 架构设计、技能（Skill）开发指南与代码实现示例。
+
+一个轻量级、零外部依赖（除 `pydantic`）的 Python 库，演示如何为 AI 智能体设计可复用的技能模块、MCP 协议服务端与多模式编排引擎。
+
+## 目录
+
+- [快速开始](#快速开始)
+- [核心特性](#核心特性)
+- [安装](#安装)
+- [使用示例](#使用示例)
+- [内置技能](#内置技能)
+- [项目结构](#项目结构)
+- [核心概念](#核心概念)
+- [文档](#文档)
+- [开发](#开发)
+- [贡献](#参与贡献)
+- [许可证](#许可证)
+
+## 快速开始
+
+```python
+from ai_mcp_skills import TextAnalysisSkill
+
+skill = TextAnalysisSkill()
+result = skill.execute(text="MCP 协议让 AI 安全调用外部工具。Hello MCP!")
+print(result["data"]["keywords"])
+```
+
+详见 [5 分钟快速开始](docs/quickstart.md)。
+
+## 核心特性
+
+- **技能框架**：`BaseSkill` 抽象基类 + `SkillMetadata` 元数据
+- **MCP 协议**：简化的 JSON-RPC 服务器（`initialize` / `tools/list` / `tools/call`）
+- **编排引擎**：串行 / 并行 / 条件三种模式 + 重试 + 超时 + 降级
+- **内置技能**：文本分析、HTTP 请求
+- **零网络依赖**：核心模块仅依赖 `pydantic`，HTTP 技能使用标准库 `urllib`
+- **完整测试**：分模块单元测试，覆盖正常与边界路径
 
 ## 项目目的
 
@@ -85,6 +128,22 @@ result = skill.execute(text="Hello world! 你好世界！")
 print(result["data"]["keywords"])
 ```
 
+## 内置技能
+
+| 技能 | 类 | 说明 |
+|------|----|----|
+| 文本分析 | `TextAnalysisSkill` | 字符统计、关键词提取、可读性评估（中英文） |
+| HTTP 请求 | `HttpRequestSkill` | GET/POST/PUT/DELETE，支持自定义头与超时 |
+
+```python
+from ai_mcp_skills import HttpRequestSkill
+
+skill = HttpRequestSkill()
+r = skill.execute(url="https://api.example.com/data", method="GET")
+if r["success"]:
+    print(r["data"]["status_code"], r["data"]["body"][:100])
+```
+
 ## 核心概念
 
 ### MCP（Management Control Plane）
@@ -121,6 +180,21 @@ Skill 是封装了特定领域能力的可复用模块。每个 Skill 包含：
 ### 4. 参考案例
 
 查看 [使用案例](docs/use-cases.md) 了解真实场景中的最佳实践。
+
+## 开发
+
+```bash
+# 安装开发依赖
+make dev          # 等价于 pip install -e ".[dev]" && pre-commit install
+
+# 常用命令
+make test         # 运行 pytest
+make lint         # ruff check .
+make typecheck    # mypy src
+make format       # ruff format .
+```
+
+CI 通过 GitHub Actions 自动运行 lint + typecheck + test（Python 3.10/3.11/3.12 矩阵）。
 
 ## 参与贡献
 
