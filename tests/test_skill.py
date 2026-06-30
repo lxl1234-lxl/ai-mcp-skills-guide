@@ -2,7 +2,15 @@
 
 import pytest
 
-from ai_mcp_skills import BaseSkill, SkillMetadata, TextAnalysisSkill
+from ai_mcp_skills import BaseSkill, SkillMetadata, TextAnalysisSkill, __version__
+
+# ---------------------------------------------------------------------------
+# 包版本
+# ---------------------------------------------------------------------------
+
+def test_package_version():
+    assert __version__ == "1.1.0"
+
 
 # ---------------------------------------------------------------------------
 # SkillMetadata

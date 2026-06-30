@@ -6,7 +6,7 @@
 - 多模式编排引擎（串行/并行/条件/重试降级）
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 from ai_mcp_skills.http_skill import HttpRequestSkill
 from ai_mcp_skills.mcp import (

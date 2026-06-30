@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-30
+
 ### Added
 - `HttpRequestSkill` 基于 urllib 标准库的 HTTP 请求技能（GET/POST/PUT/DELETE）
 - GitHub Actions CI 流水线（lint + typecheck + test，Python 3.10/3.11/3.12 矩阵）

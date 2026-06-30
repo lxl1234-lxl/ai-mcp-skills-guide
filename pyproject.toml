@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-mcp-skills"
-version = "1.0.0"
+version = "1.1.0"
 description = "AI 系统中 MCP 架构的技能开发框架：技能定义、服务端实现与多模式编排引擎"
 readme = "README.md"
 license = {text = "MIT"}
