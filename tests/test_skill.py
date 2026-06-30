@@ -1,12 +1,13 @@
 """Skill 模块测试 - SkillMetadata / BaseSkill / TextAnalysisSkill"""
 
 import pytest
-from ai_mcp_skills import BaseSkill, SkillMetadata, TextAnalysisSkill
 
+from ai_mcp_skills import BaseSkill, SkillMetadata, TextAnalysisSkill
 
 # ---------------------------------------------------------------------------
 # SkillMetadata
 # ---------------------------------------------------------------------------
+
 
 def test_skill_metadata_defaults():
     m = SkillMetadata(name="test", description="desc")
@@ -19,8 +20,11 @@ def test_skill_metadata_defaults():
 
 def test_skill_metadata_full():
     m = SkillMetadata(
-        name="my-skill", description="my desc",
-        version="2.0.0", author="me", tags=["a", "b"],
+        name="my-skill",
+        description="my desc",
+        version="2.0.0",
+        author="me",
+        tags=["a", "b"],
     )
     assert m.name == "my-skill"
     assert m.version == "2.0.0"
@@ -39,6 +43,7 @@ def test_skill_metadata_tags_independent():
 # ---------------------------------------------------------------------------
 # BaseSkill
 # ---------------------------------------------------------------------------
+
 
 def test_base_skill_tool_definition():
     m = SkillMetadata(name="my-skill", description="my desc", tags=["tag1"])
@@ -74,6 +79,7 @@ def test_base_skill_default_input_schema():
 # ---------------------------------------------------------------------------
 # TextAnalysisSkill
 # ---------------------------------------------------------------------------
+
 
 def test_text_analysis_empty():
     skill = TextAnalysisSkill()

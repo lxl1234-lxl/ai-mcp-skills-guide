@@ -14,13 +14,15 @@
 
 import asyncio
 import time
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Coroutine
+from typing import Any
 
 
 class TaskStatus(Enum):
     """任务执行状态"""
+
     PENDING = "pending"
     RUNNING = "running"
     SUCCESS = "success"
@@ -42,6 +44,7 @@ class TaskResult:
         duration_ms: 耗时（毫秒）
         retries: 重试次数
     """
+
     task_name: str
     status: TaskStatus
     data: Any = None
@@ -65,6 +68,7 @@ class Task:
         fallback: 降级处理函数
         skip_on_failure: 前置依赖失败时是否跳过
     """
+
     name: str
     coroutine: Callable[..., Coroutine]
     args: tuple = ()
@@ -108,7 +112,8 @@ class Orchestrator:
             if previous and previous.status == TaskStatus.FAILED:
                 if task.skip_on_failure:
                     self.results[task.name] = TaskResult(
-                        task_name=task.name, status=TaskStatus.SKIPPED,
+                        task_name=task.name,
+                        status=TaskStatus.SKIPPED,
                         error="前置任务失败，已跳过",
                     )
                     continue
@@ -125,7 +130,8 @@ class Orchestrator:
             )
             if failed_dep and task.skip_on_failure:
                 self.results[task.name] = TaskResult(
-                    task_name=task.name, status=TaskStatus.SKIPPED,
+                    task_name=task.name,
+                    status=TaskStatus.SKIPPED,
                     error="前置依赖失败，已跳过",
                 )
                 previous = self.results[task.name]
@@ -153,7 +159,9 @@ class Orchestrator:
         for task, result in zip(tasks, results):
             if isinstance(result, Exception):
                 self.results[task.name] = TaskResult(
-                    task_name=task.name, status=TaskStatus.FAILED, error=str(result),
+                    task_name=task.name,
+                    status=TaskStatus.FAILED,
+                    error=str(result),
                 )
             else:
                 self.results[task.name] = result
@@ -161,7 +169,8 @@ class Orchestrator:
         return self.results
 
     async def execute_conditional(
-        self, tasks: list[Task],
+        self,
+        tasks: list[Task],
         condition_fn: Callable[[dict[str, TaskResult]], list[Task]],
         max_iterations: int = 3,
     ) -> dict[str, TaskResult]:
@@ -202,8 +211,11 @@ class Orchestrator:
                 )
                 elapsed = (time.time() - start) * 1000
                 return TaskResult(
-                    task_name=task.name, status=TaskStatus.SUCCESS,
-                    data=data, duration_ms=round(elapsed, 1), retries=retries,
+                    task_name=task.name,
+                    status=TaskStatus.SUCCESS,
+                    data=data,
+                    duration_ms=round(elapsed, 1),
+                    retries=retries,
                 )
             except asyncio.TimeoutError:
                 last_error = f"超时 ({task.timeout_seconds}s)"
@@ -212,20 +224,25 @@ class Orchestrator:
                 last_error = str(e)
                 retries = attempt + 1
                 if attempt < task.max_retries:
-                    await asyncio.sleep(0.5 * (2 ** attempt))
+                    await asyncio.sleep(0.5 * (2**attempt))
 
         # 降级处理
         if task.fallback:
             try:
                 fallback_data = await task.fallback()
                 return TaskResult(
-                    task_name=task.name, status=TaskStatus.FALLBACK,
-                    data=fallback_data, error=last_error, retries=retries,
+                    task_name=task.name,
+                    status=TaskStatus.FALLBACK,
+                    data=fallback_data,
+                    error=last_error,
+                    retries=retries,
                 )
             except Exception as e:
                 last_error = f"降级也失败: {str(e)}"
 
         return TaskResult(
-            task_name=task.name, status=TaskStatus.FAILED,
-            error=last_error, retries=retries,
+            task_name=task.name,
+            status=TaskStatus.FAILED,
+            error=last_error,
+            retries=retries,
         )

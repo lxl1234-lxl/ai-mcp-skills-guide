@@ -19,10 +19,11 @@ def make_tools() -> dict:
     def weather_query(**kwargs) -> dict:
         """天气查询（模拟）"""
         import random
+
         city = kwargs.get("city", "")
         if not city:
             return {"success": False, "error": "城市名称不能为空"}
-        random.seed(hash(city) % (2 ** 31))
+        random.seed(hash(city) % (2**31))
         conditions = ["晴天", "多云", "阴天", "小雨", "中雨", "阵雨"]
         return {
             "success": True,
@@ -42,8 +43,12 @@ def make_tools() -> dict:
             return {"success": False, "error": "表达式不能为空"}
         try:
             safe_builtins = {
-                "abs": abs, "round": round, "min": min, "max": max,
-                "pow": pow, "sqrt": lambda x: x ** 0.5,
+                "abs": abs,
+                "round": round,
+                "min": min,
+                "max": max,
+                "pow": pow,
+                "sqrt": lambda x: x**0.5,
             }
             result = eval(expression, {"__builtins__": {}}, safe_builtins)
             return {
@@ -59,28 +64,37 @@ def make_tools() -> dict:
         if not path:
             return {"success": False, "error": "路径不能为空"}
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 content = f.read(5000)
             return {"success": True, "data": {"path": path, "content": content}}
         except FileNotFoundError:
             return {"success": False, "error": f"文件不存在: {path}"}
 
     return {
-        "weather_query": (weather_query, {
-            "type": "object",
-            "properties": {"city": {"type": "string", "description": "城市名称"}},
-            "required": ["city"],
-        }),
-        "math_calculate": (math_calc, {
-            "type": "object",
-            "properties": {"expression": {"type": "string", "description": "数学表达式"}},
-            "required": ["expression"],
-        }),
-        "filesystem_read": (file_read, {
-            "type": "object",
-            "properties": {"path": {"type": "string", "description": "文件路径"}},
-            "required": ["path"],
-        }),
+        "weather_query": (
+            weather_query,
+            {
+                "type": "object",
+                "properties": {"city": {"type": "string", "description": "城市名称"}},
+                "required": ["city"],
+            },
+        ),
+        "math_calculate": (
+            math_calc,
+            {
+                "type": "object",
+                "properties": {"expression": {"type": "string", "description": "数学表达式"}},
+                "required": ["expression"],
+            },
+        ),
+        "filesystem_read": (
+            file_read,
+            {
+                "type": "object",
+                "properties": {"path": {"type": "string", "description": "文件路径"}},
+                "required": ["path"],
+            },
+        ),
     }
 
 
@@ -102,11 +116,17 @@ def main():
         )
 
     # 2. 初始化握手
-    r = server.handle_request({
-        "jsonrpc": "2.0", "id": 1, "method": "initialize",
-        "params": {"protocolVersion": "2024-11-05",
-                    "clientInfo": {"name": "demo", "version": "1.0"}},
-    })
+    r = server.handle_request(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2024-11-05",
+                "clientInfo": {"name": "demo", "version": "1.0"},
+            },
+        }
+    )
     info = r["result"]["serverInfo"]
     print(f"服务器: {info['name']} v{info['version']} 已就绪")
 
@@ -118,19 +138,29 @@ def main():
 
     # 4. 调用工具
     print("\n>>> 调用 math_calculate")
-    r = server.handle_request({
-        "jsonrpc": "2.0", "id": 3, "method": "tools/call",
-        "params": {"name": "math_calculate",
-                    "arguments": {"expression": "2 ** 10 + sqrt(144)"}},
-    })
+    r = server.handle_request(
+        {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "tools/call",
+            "params": {
+                "name": "math_calculate",
+                "arguments": {"expression": "2 ** 10 + sqrt(144)"},
+            },
+        }
+    )
     data = json.loads(r["result"]["content"][0]["text"])
     print(f"  结果: {data['data']['result']}")
 
     print("\n>>> 调用 weather_query")
-    r = server.handle_request({
-        "jsonrpc": "2.0", "id": 4, "method": "tools/call",
-        "params": {"name": "weather_query", "arguments": {"city": "北京"}},
-    })
+    r = server.handle_request(
+        {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "tools/call",
+            "params": {"name": "weather_query", "arguments": {"city": "北京"}},
+        }
+    )
     w = json.loads(r["result"]["content"][0]["text"])["data"]
     print(f"  {w['city']}: {w['temperature']}{w['unit']}, {w['condition']}")
 

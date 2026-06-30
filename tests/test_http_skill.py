@@ -41,10 +41,13 @@ def test_http_skill_success(monkeypatch):
     class FakeResponse:
         status = 200
         headers = {"Content-Type": "text/plain"}
+
         def read(self):
             return b"hello world"
+
         def __enter__(self):
             return self
+
         def __exit__(self, *a):
             return False
 
@@ -72,10 +75,13 @@ def test_http_skill_post_with_body(monkeypatch):
     class FakeResponse:
         status = 201
         headers = {}
+
         def read(self):
             return b'{"id": 1}'
+
         def __enter__(self):
             return self
+
         def __exit__(self, *a):
             return False
 
@@ -101,6 +107,7 @@ def test_http_skill_post_with_body(monkeypatch):
 def test_http_skill_network_error(monkeypatch):
     """网络错误应被捕获并返回结构化失败"""
     import urllib.error
+
     skill = HttpRequestSkill()
 
     def fake_urlopen(req, timeout=None):
@@ -116,9 +123,11 @@ def test_http_skill_network_error(monkeypatch):
 def test_http_skill_to_dict_conversion():
     """验证内部 _headers_to_dict 辅助方法"""
     skill = HttpRequestSkill()
+
     # 直接调用私有方法验证响应转换
     class FakeHeaders:
         def items(self):
             return [("Content-Type", "text/plain"), ("X-Custom", "abc")]
+
     d = skill._headers_to_dict(FakeHeaders())
     assert d == {"Content-Type": "text/plain", "X-Custom": "abc"}

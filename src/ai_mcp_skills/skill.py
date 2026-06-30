@@ -106,23 +106,90 @@ class TextAnalysisSkill(BaseSkill):
     """
 
     STOP_WORDS = {
-        "的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都",
-        "一", "一个", "上", "也", "很", "到", "说", "要", "去", "你",
-        "会", "着", "没有", "看", "好", "自己", "这", "他", "她", "它",
-        "the", "a", "an", "is", "are", "was", "were", "be", "been",
-        "being", "have", "has", "had", "do", "does", "did", "will",
-        "would", "could", "should", "may", "might", "can", "shall",
-        "to", "of", "in", "for", "on", "with", "at", "by", "from",
-        "and", "or", "but", "not", "so", "if", "as", "than", "that",
+        "的",
+        "了",
+        "在",
+        "是",
+        "我",
+        "有",
+        "和",
+        "就",
+        "不",
+        "人",
+        "都",
+        "一",
+        "一个",
+        "上",
+        "也",
+        "很",
+        "到",
+        "说",
+        "要",
+        "去",
+        "你",
+        "会",
+        "着",
+        "没有",
+        "看",
+        "好",
+        "自己",
+        "这",
+        "他",
+        "她",
+        "它",
+        "the",
+        "a",
+        "an",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "will",
+        "would",
+        "could",
+        "should",
+        "may",
+        "might",
+        "can",
+        "shall",
+        "to",
+        "of",
+        "in",
+        "for",
+        "on",
+        "with",
+        "at",
+        "by",
+        "from",
+        "and",
+        "or",
+        "but",
+        "not",
+        "so",
+        "if",
+        "as",
+        "than",
+        "that",
     }
 
     def __init__(self):
-        super().__init__(SkillMetadata(
-            name="text_analysis",
-            description="分析文本内容，返回字数统计、关键词提取和可读性评分",
-            version="1.0.0",
-            tags=["text", "analysis", "nlp"],
-        ))
+        super().__init__(
+            SkillMetadata(
+                name="text_analysis",
+                description="分析文本内容，返回字数统计、关键词提取和可读性评分",
+                version="1.0.0",
+                tags=["text", "analysis", "nlp"],
+            )
+        )
 
     def get_input_schema(self) -> dict:
         return {
@@ -150,7 +217,9 @@ class TextAnalysisSkill(BaseSkill):
         }
 
     def execute(
-        self, text: str, top_n_keywords: int = 10,
+        self,
+        text: str,
+        top_n_keywords: int = 10,
         include_readability: bool = True,
     ) -> dict[str, Any]:
         """执行文本分析
@@ -189,9 +258,9 @@ class TextAnalysisSkill(BaseSkill):
 
     def _calculate_stats(self, text: str) -> dict:
         clean = text.strip()
-        words_cn = len(re.findall(r'[\u4e00-\u9fff]', clean))
-        words_en = len(re.findall(r'[a-zA-Z]+', clean))
-        sentences = max(len(re.findall(r'[。！？.!?\n]+', clean)), 1)
+        words_cn = len(re.findall(r"[\u4e00-\u9fff]", clean))
+        words_en = len(re.findall(r"[a-zA-Z]+", clean))
+        sentences = max(len(re.findall(r"[。！？.!?\n]+", clean)), 1)
         return {
             "total_chars": len(clean),
             "chars_no_spaces": len(clean.replace(" ", "").replace("\n", "")),
@@ -203,22 +272,18 @@ class TextAnalysisSkill(BaseSkill):
         }
 
     def _extract_keywords(self, text: str, top_n: int) -> list[dict]:
-        cn_words = re.findall(r'[\u4e00-\u9fff]{2,4}', text)
-        en_words = re.findall(r'[a-zA-Z]{3,}', text.lower())
-        all_words = [w for w in cn_words + en_words
-                     if w.lower() not in self.STOP_WORDS]
+        cn_words = re.findall(r"[\u4e00-\u9fff]{2,4}", text)
+        en_words = re.findall(r"[a-zA-Z]{3,}", text.lower())
+        all_words = [w for w in cn_words + en_words if w.lower() not in self.STOP_WORDS]
         word_freq = Counter(all_words)
-        return [
-            {"word": word, "frequency": freq}
-            for word, freq in word_freq.most_common(top_n)
-        ]
+        return [{"word": word, "frequency": freq} for word, freq in word_freq.most_common(top_n)]
 
     def _assess_readability(self, text: str, stats: dict) -> dict:
         tw = stats["total_words"]
         if tw == 0:
             return {"score": 0, "level": "N/A", "description": "无文本内容"}
         avg_sl = tw / stats["sentences"]
-        en_words = re.findall(r'[a-zA-Z]+', text)
+        en_words = re.findall(r"[a-zA-Z]+", text)
         avg_wl = sum(len(w) for w in en_words) / len(en_words) if en_words else 0
 
         if avg_sl < 10:

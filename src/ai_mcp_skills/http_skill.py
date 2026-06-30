@@ -21,13 +21,15 @@ class HttpRequestSkill(BaseSkill):
     """
 
     def __init__(self):
-        super().__init__(SkillMetadata(
-            name="http_request",
-            description="发送 HTTP 请求并返回状态码、响应头与响应体。"
-                        "适用于调用 REST API、抓取网页或上传数据。",
-            version="1.0.0",
-            tags=["http", "network", "api", "request"],
-        ))
+        super().__init__(
+            SkillMetadata(
+                name="http_request",
+                description="发送 HTTP 请求并返回状态码、响应头与响应体。"
+                "适用于调用 REST API、抓取网页或上传数据。",
+                version="1.0.0",
+                tags=["http", "network", "api", "request"],
+            )
+        )
 
     def get_input_schema(self) -> dict:
         return {
@@ -66,8 +68,12 @@ class HttpRequestSkill(BaseSkill):
         }
 
     def execute(
-        self, url: str, method: str = "GET", headers: dict | None = None,
-        body: str = "", timeout: float = 30,
+        self,
+        url: str,
+        method: str = "GET",
+        headers: dict | None = None,
+        body: str = "",
+        timeout: float = 30,
     ) -> dict[str, Any]:
         """执行 HTTP 请求
 
@@ -84,7 +90,11 @@ class HttpRequestSkill(BaseSkill):
         if not url or not url.strip():
             return {"success": False, "data": None, "error": "URL 不能为空"}
         if not (url.startswith("http://") or url.startswith("https://")):
-            return {"success": False, "data": None, "error": f"无效 URL: {url}（需以 http:// 或 https:// 开头）"}
+            return {
+                "success": False,
+                "data": None,
+                "error": f"无效 URL: {url}（需以 http:// 或 https:// 开头）",
+            }
 
         method = (method or "GET").upper()
         if method not in ("GET", "POST", "PUT", "DELETE"):
@@ -93,7 +103,10 @@ class HttpRequestSkill(BaseSkill):
         try:
             data = body.encode("utf-8") if body else None
             req = urllib.request.Request(
-                url, data=data, method=method, headers=headers or {},
+                url,
+                data=data,
+                method=method,
+                headers=headers or {},
             )
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 raw = resp.read()

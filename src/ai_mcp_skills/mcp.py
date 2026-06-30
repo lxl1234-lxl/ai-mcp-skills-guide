@@ -10,8 +10,8 @@ MCP 服务端模块 - 工具定义、技能注册中心与 MCP 服务器实现
 
 import json
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
 
 
 @dataclass
@@ -26,7 +26,7 @@ class ToolDefinition:
 
     name: str
     description: str
-    inputSchema: dict = field(default_factory=dict)
+    inputSchema: dict = field(default_factory=dict)  # noqa: N815 - MCP 协议字段名
 
 
 @dataclass
@@ -39,7 +39,7 @@ class ToolResult:
     """
 
     content: list[dict]
-    isError: bool = False
+    isError: bool = False  # noqa: N815 - MCP 协议字段名
 
 
 class SkillRegistry:
@@ -55,8 +55,11 @@ class SkillRegistry:
         self._tools: dict[str, tuple[ToolDefinition, Callable]] = {}
 
     def register(
-        self, name: str, description: str,
-        input_schema: dict, handler: Callable,
+        self,
+        name: str,
+        description: str,
+        input_schema: dict,
+        handler: Callable,
     ) -> None:
         """注册一个新工具到注册中心
 
@@ -162,7 +165,8 @@ class MCPServer:
 
     def _handle_initialize(self, req_id) -> dict:
         return {
-            "jsonrpc": "2.0", "id": req_id,
+            "jsonrpc": "2.0",
+            "id": req_id,
             "result": {
                 "protocolVersion": "2024-11-05",
                 "serverInfo": {"name": self.name, "version": self.version},
@@ -173,7 +177,8 @@ class MCPServer:
     def _handle_list_tools(self, req_id) -> dict:
         tools = self.registry.list_tools()
         return {
-            "jsonrpc": "2.0", "id": req_id,
+            "jsonrpc": "2.0",
+            "id": req_id,
             "result": {
                 "tools": [
                     {"name": t.name, "description": t.description, "inputSchema": t.inputSchema}
@@ -188,7 +193,8 @@ class MCPServer:
             params.get("arguments", {}),
         )
         return {
-            "jsonrpc": "2.0", "id": req_id,
+            "jsonrpc": "2.0",
+            "id": req_id,
             "result": {"content": result.content, "isError": result.isError},
         }
 

@@ -1,13 +1,15 @@
 """Orchestrator 模块测试 - 串行/并行/条件 + 重试/超时/降级"""
 
 import asyncio
-import pytest
-from ai_mcp_skills import Orchestrator, Task, TaskResult, TaskStatus
 
+import pytest
+
+from ai_mcp_skills import Orchestrator, Task, TaskResult, TaskStatus
 
 # ---------------------------------------------------------------------------
 # 串行
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_sequential_basic():
@@ -19,10 +21,12 @@ async def test_sequential_basic():
     async def step2(_previous_result=None):
         return {"step": 2, "prev": _previous_result}
 
-    results = await orch.execute_sequential([
-        Task(name="s1", coroutine=step1),
-        Task(name="s2", coroutine=step2, depends_on=["s1"]),
-    ])
+    results = await orch.execute_sequential(
+        [
+            Task(name="s1", coroutine=step1),
+            Task(name="s2", coroutine=step2, depends_on=["s1"]),
+        ]
+    )
     assert results["s1"].status == TaskStatus.SUCCESS
     assert results["s2"].status == TaskStatus.SUCCESS
     assert results["s2"].data["prev"]["step"] == 1
@@ -38,10 +42,12 @@ async def test_sequential_skip_on_failure():
     async def next_step():
         return {"ok": True}
 
-    results = await orch.execute_sequential([
-        Task(name="bad", coroutine=fail_step),
-        Task(name="next", coroutine=next_step, skip_on_failure=True),
-    ])
+    results = await orch.execute_sequential(
+        [
+            Task(name="bad", coroutine=fail_step),
+            Task(name="next", coroutine=next_step, skip_on_failure=True),
+        ]
+    )
     assert results["bad"].status == TaskStatus.FAILED
     assert results["next"].status == TaskStatus.SKIPPED
 
@@ -59,10 +65,12 @@ async def test_sequential_stops_on_failure_without_skip():
         executed.append("next")
         return {"ok": True}
 
-    results = await orch.execute_sequential([
-        Task(name="bad", coroutine=fail_step),
-        Task(name="next", coroutine=next_step),
-    ])
+    results = await orch.execute_sequential(
+        [
+            Task(name="bad", coroutine=fail_step),
+            Task(name="next", coroutine=next_step),
+        ]
+    )
     assert results["bad"].status == TaskStatus.FAILED
     assert "next" not in results  # 终止，未加入结果
     assert executed == []  # 未执行
@@ -72,17 +80,23 @@ async def test_sequential_stops_on_failure_without_skip():
 # 并行
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_parallel_basic():
     orch = Orchestrator()
 
-    async def a(): return {"name": "a"}
-    async def b(): return {"name": "b"}
+    async def a():
+        return {"name": "a"}
 
-    results = await orch.execute_parallel([
-        Task(name="a", coroutine=a),
-        Task(name="b", coroutine=b),
-    ])
+    async def b():
+        return {"name": "b"}
+
+    results = await orch.execute_parallel(
+        [
+            Task(name="a", coroutine=a),
+            Task(name="b", coroutine=b),
+        ]
+    )
     assert results["a"].status == TaskStatus.SUCCESS
     assert results["b"].status == TaskStatus.SUCCESS
 
@@ -92,13 +106,18 @@ async def test_parallel_exception_isolated():
     """一个任务失败不影响其他任务"""
     orch = Orchestrator()
 
-    async def ok(): return {"ok": True}
-    async def boom(): raise RuntimeError("boom")
+    async def ok():
+        return {"ok": True}
 
-    results = await orch.execute_parallel([
-        Task(name="ok", coroutine=ok),
-        Task(name="boom", coroutine=boom),
-    ])
+    async def boom():
+        raise RuntimeError("boom")
+
+    results = await orch.execute_parallel(
+        [
+            Task(name="ok", coroutine=ok),
+            Task(name="boom", coroutine=boom),
+        ]
+    )
     assert results["ok"].status == TaskStatus.SUCCESS
     assert results["boom"].status == TaskStatus.FAILED
 
@@ -106,6 +125,7 @@ async def test_parallel_exception_isolated():
 # ---------------------------------------------------------------------------
 # 条件
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_conditional_branches_when_low_score():
@@ -124,7 +144,8 @@ async def test_conditional_branches_when_low_score():
         return []
 
     results = await orch.execute_conditional(
-        [Task(name="analyze", coroutine=analyze)], decide,
+        [Task(name="analyze", coroutine=analyze)],
+        decide,
     )
     assert "optimize" in results
     assert results["optimize"].status == TaskStatus.SUCCESS
@@ -141,7 +162,8 @@ async def test_conditional_no_branch_when_high_score():
         return []  # 高分不分支
 
     results = await orch.execute_conditional(
-        [Task(name="analyze", coroutine=analyze)], decide,
+        [Task(name="analyze", coroutine=analyze)],
+        decide,
     )
     assert "analyze" in results
     assert len(results) == 1  # 仅初始任务
@@ -162,7 +184,9 @@ async def test_conditional_max_iterations():
         return [Task(name=f"t{counter['n']}", coroutine=loop_task)]
 
     results = await orch.execute_conditional(
-        [Task(name="t0", coroutine=loop_task)], decide, max_iterations=2,
+        [Task(name="t0", coroutine=loop_task)],
+        decide,
+        max_iterations=2,
     )
     # 初始 + 2 次迭代
     assert len(results) <= 3
@@ -171,6 +195,7 @@ async def test_conditional_max_iterations():
 # ---------------------------------------------------------------------------
 # 重试
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_retry_succeeds_after_failures():
@@ -183,9 +208,11 @@ async def test_retry_succeeds_after_failures():
             raise RuntimeError("transient")
         return {"ok": True}
 
-    results = await orch.execute_parallel([
-        Task(name="flaky", coroutine=flaky, max_retries=3, timeout_seconds=2),
-    ])
+    results = await orch.execute_parallel(
+        [
+            Task(name="flaky", coroutine=flaky, max_retries=3, timeout_seconds=2),
+        ]
+    )
     assert results["flaky"].status == TaskStatus.SUCCESS
     assert results["flaky"].retries == 2  # 失败 2 次后第 3 次成功
 
@@ -200,10 +227,11 @@ async def test_retry_exhausted_then_fallback():
     async def fallback():
         return {"cached": True}
 
-    results = await orch.execute_parallel([
-        Task(name="api", coroutine=always_fail, max_retries=1,
-             fallback=fallback),
-    ])
+    results = await orch.execute_parallel(
+        [
+            Task(name="api", coroutine=always_fail, max_retries=1, fallback=fallback),
+        ]
+    )
     assert results["api"].status == TaskStatus.FALLBACK
     assert results["api"].data["cached"] is True
 
@@ -216,9 +244,11 @@ async def test_timeout_handling():
         await asyncio.sleep(2)
         return {"done": True}
 
-    results = await orch.execute_parallel([
-        Task(name="slow", coroutine=slow, timeout_seconds=0.1, max_retries=0),
-    ])
+    results = await orch.execute_parallel(
+        [
+            Task(name="slow", coroutine=slow, timeout_seconds=0.1, max_retries=0),
+        ]
+    )
     assert results["slow"].status == TaskStatus.FAILED
     assert "超时" in results["slow"].error
 
@@ -230,9 +260,11 @@ async def test_no_fallback_returns_failed():
     async def boom():
         raise RuntimeError("no fallback")
 
-    results = await orch.execute_parallel([
-        Task(name="x", coroutine=boom, max_retries=0),
-    ])
+    results = await orch.execute_parallel(
+        [
+            Task(name="x", coroutine=boom, max_retries=0),
+        ]
+    )
     assert results["x"].status == TaskStatus.FAILED
     assert results["x"].error == "no fallback"
 
@@ -240,6 +272,7 @@ async def test_no_fallback_returns_failed():
 # ---------------------------------------------------------------------------
 # TaskResult / Task 数据结构
 # ---------------------------------------------------------------------------
+
 
 def test_task_result_defaults():
     tr = TaskResult(task_name="t", status=TaskStatus.PENDING)
@@ -251,8 +284,11 @@ def test_task_result_defaults():
 
 def test_task_result_full():
     tr = TaskResult(
-        task_name="test", status=TaskStatus.SUCCESS,
-        data={"x": 1}, duration_ms=12.5, retries=2,
+        task_name="test",
+        status=TaskStatus.SUCCESS,
+        data={"x": 1},
+        duration_ms=12.5,
+        retries=2,
     )
     assert tr.task_name == "test"
     assert tr.status == TaskStatus.SUCCESS
@@ -262,7 +298,9 @@ def test_task_result_full():
 
 
 def test_task_defaults():
-    async def f(): return None
+    async def f():
+        return None
+
     t = Task(name="t", coroutine=f)
     assert t.args == ()
     assert t.kwargs == {}

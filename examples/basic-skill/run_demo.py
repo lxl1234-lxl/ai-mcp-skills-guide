@@ -43,21 +43,21 @@ def main():
     if result["success"]:
         data = result["data"]
         stats = data["statistics"]
-        print(f"文本统计:")
+        print("文本统计:")
         print(f"  总字符数: {stats['total_chars']}")
         print(f"  中文词数: {stats['chinese_words']}")
         print(f"  英文词数: {stats['english_words']}")
         print(f"  总词数:   {stats['total_words']}")
         print(f"  句子数:   {stats['sentences']}")
 
-        print(f"\n关键词 (Top-5):")
+        print("\n关键词 (Top-5):")
         for kw in data["keywords"]:
             bar = "█" * kw["frequency"]
             print(f"  {kw['word']:<12} {bar} ({kw['frequency']})")
 
         if data["readability"]:
             r = data["readability"]
-            print(f"\n可读性评估:")
+            print("\n可读性评估:")
             print(f"  等级:     {r['level']}")
             print(f"  说明:     {r['description']}")
             print(f"  平均句长: {r['avg_sentence_length']} 词/句")
