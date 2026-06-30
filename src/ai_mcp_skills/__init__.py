@@ -19,6 +19,7 @@ from ai_mcp_skills.skill import (
     SkillMetadata,
     TextAnalysisSkill,
 )
+from ai_mcp_skills.http_skill import HttpRequestSkill
 from ai_mcp_skills.mcp import (
     MCPServer,
     SkillRegistry,
@@ -33,6 +34,7 @@ __all__ = [
     "SkillMetadata",
     "BaseSkill",
     "TextAnalysisSkill",
+    "HttpRequestSkill",
     # MCP
     "ToolDefinition",
     "ToolResult",
